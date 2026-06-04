@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Routly AI — Secure LLM Routing for Enterprise</title>
+<meta name="description" content="Routly AI routes your prompts to the right AI model, automatically. Enterprise-grade security, cost control, and performance — without changing your stack.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #080A0F;
+    --surface: #0D1017;
+    --card: #131923;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(255,255,255,0.14);
+    --text: #F0F2F5;
+    --muted: #7A8494;
+    --accent: #00E5A0;
+    --accent-dim: rgba(0,229,160,0.12);
+    --accent-border: rgba(0,229,160,0.3);
+    --blue: #3B82F6;
+    --blue-dim: rgba(59,130,246,0.1);
+    --amber: #F59E0B;
+    --amber-dim: rgba(245,158,11,0.1);
+    --red: #EF4444;
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── GRID TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── GLOW ── */
+  .glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5%;
+    height: 64px;
+    background: rgba(8,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-mark {
+    width: 28px; height: 28px;
+    background: var(--accent);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-mark svg { width: 16px; height: 16px; }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--text); }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #000 !important;
+    font-weight: 500 !important;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 14px !important;
+    transition: opacity 0.2s !important;
+  }
+
+  .nav-cta:hover { opacity: 0.88; }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 5% 80px;
+    overflow: hidden;
+  }
+
+  .hero .glow-orb:nth-child(1) {
+    width: 600px; height: 600px;
+    background: rgba(0,229,160,0.07);
+    top: 10%; left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .hero .glow-orb:nth-child(2) {
+    width: 400px; height: 400px;
+    background: rgba(59,130,246,0.06);
+    top: 40%; left: 15%;
+  }
+
+  .hero .glow-orb:nth-child(3) {
+    width: 300px; height: 300px;
+    background: rgba(245,158,11,0.05);
+    top: 30%; right: 10%;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--accent-border);
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    padding: 5px 14px;
+    border-radius: 100px;
+    margin-bottom: 28px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 7vw, 80px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    max-width: 900px;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 24px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero p {
+    font-size: clamp(16px, 2vw, 20px);
+    color: var(--muted);
+    max-width: 580px;
+    line-height: 1.65;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    padding: 13px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 15px;
+    padding: 13px 28px;
+    border-radius: 8px;
+    border: 1px solid var(--border-bright);
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .btn-secondary:hover {
+    border-color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.04);
+  }
+
+  /* ── ROUTING DIAGRAM ── */
+  .routing-demo {
+    position: relative;
+    z-index: 1;
+    margin-top: 80px;
+    width: 100%;
+    max-width: 800px;
+  }
+
+  .routing-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .routing-visual {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .routing-visual::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-border), transparent);
+  }
+
+  .rv-box {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: center;
+  }
+
+  .rv-box-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .rv-box-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .rv-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 12px;
+    flex-shrink: 0;
+    gap: 4px;
+  }
+
+  .rv-arrow-line {
+    height: 1px;
+    width: 40px;
+    background: linear-gradient(90deg, var(--border-bright), var(--accent));
+  }
+
+  .rv-arrow-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .rv-router {
+    flex-shrink: 0;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    text-align: center;
+    position: relative;
+  }
+
+  .rv-router-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+
+  .rv-router-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .rv-models {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rv-model {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  .rv-model.active {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .rv-model-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .rv-model.active .rv-model-dot { background: var(--accent); }
+
+  /* ── SECTION SHARED ── */
+  section {
+    position: relative;
+    padding: 100px 5%;
+    z-index: 1;
+  }
+
+  .section-tag {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 520px;
+    font-weight: 300;
+    line-height: 1.65;
+  }
+
+  .section-header { margin-bottom: 60px; }
+
+  /* ── HOW IT WORKS ── */
+  .how-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2px;
+    background: var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .how-step {
+    background: var(--card);
+    padding: 36px 28px;
+    position: relative;
+  }
+
+  .step-number {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .step-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .step-icon svg { width: 20px; height: 20px; }
+
+  .step-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 1.25;
+  }
+
+  .step-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .feature-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+
+  .feature-card:hover { border-color: var(--border-bright); }
+
+  .feature-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+
+  .feature-icon svg { width: 18px; height: 18px; }
+
+  .feature-title {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .feature-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── MODELS ── */
+  .models-section { background: var(--surface); }
+
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .model-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 16px;
+    text-align: center;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .model-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+  }
+
+  .model-provider {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .model-name {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .model-tags {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .model-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+
+  .tag-fast { background: var(--blue-dim); color: var(--blue); }
+  .tag-smart { background: var(--accent-dim); color: var(--accent); }
+  .tag-cheap { background: var(--amber-dim); color: var(--amber); }
+  .tag-code { background: rgba(139,92,246,0.1); color: #A78BFA; }
+
+  /* ── STATS ── */
+  .stats-bar {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+
+  .stat-item {
+    padding: 48px 32px;
+    border-right: 1px solid var(--border);
+  }
+
+  .stat-item:last-child { border-right: none; }
+
+  .stat-number {
+    font-family: var(--font-display);
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .stat-label {
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  /* ── PRICING ── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .pricing-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px 28px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .pricing-card.featured {
+    border-color: var(--accent-border);
+    background: linear-gradient(160deg, rgba(0,229,160,0.05) 0%, var(--card) 60%);
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: -1px; left: 50%; transform: translateX(-50%);
+    background: var(--accent);
+    color: #000;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 4px 14px;
+    border-radius: 0 0 8px 8px;
+    text-transform: uppercase;
+  }
+
+  .plan-name {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .plan-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .plan-price {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 4px;
+  }
+
+  .plan-price sup { font-size: 20px; vertical-align: top; margin-top: 8px; }
+  .plan-price span { font-size: 14px; font-weight: 400; color: var(--muted); }
+
+  .plan-mo { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+  .plan-divider {
+    height: 1px;
+    background: var(--border);
+    margin-bottom: 24px;
+  }
+
+  .plan-features { list-style: none; }
+
+  .plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    margin-bottom: 12px;
+    color: var(--muted);
+  }
+
+  .plan-features li svg {
+    width: 15px; height: 15px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .plan-features li strong { color: var(--text); font-weight: 500; }
+
+  .plan-btn {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    margin-top: 28px;
+    transition: opacity 0.2s;
+  }
+
+  .plan-btn-outline {
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+  }
+
+  .plan-btn-outline:hover { border-color: rgba(255,255,255,0.3); }
+
+  .plan-btn-solid {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .plan-btn-solid:hover { opacity: 0.88; }
+
+  /* ── CTA ── */
+  .cta-section {
+    text-align: center;
+    padding: 120px 5%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section .glow-orb {
+    width: 500px; height: 500px;
+    background: rgba(0,229,160,0.06);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+
+  .cta-section h2 {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 5vw, 60px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    position: relative; z-index: 1;
+  }
+
+  .cta-section p {
+    color: var(--muted);
+    font-size: 18px;
+    font-weight: 300;
+    margin-bottom: 40px;
+    position: relative; z-index: 1;
+  }
+
+  .cta-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative; z-index: 1;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-logo {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 24px;
+    list-style: none;
+  }
+
+  .footer-links a {
+    color: var(--muted);
+    font-size: 13px;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--text); }
+
+  .footer-copy {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #0A0E16;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    margin-top: 32px;
+  }
+
+  .code-block .kw { color: #7C3AED; }
+  .code-block .str { color: var(--accent); }
+  .code-block .key { color: var(--blue); }
+  .code-block .val { color: #F59E0B; }
+  .code-block .cmt { color: var(--muted); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .routing-visual { flex-direction: column; gap: 12px; }
+    .rv-arrow { flex-direction: row; padding: 0; }
+    .rv-arrow-line { width: 30px; height: 1px; }
+    .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .stat-item:last-child { border-bottom: none; }
+  }
+
+  /* Animate in */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero > * {
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .hero > *:nth-child(1) { animation-delay: 0.1s; }
+  .hero > *:nth-child(2) { animation-delay: 0.15s; }
+  .hero > *:nth-child(3) { animation-delay: 0.2s; }
+  .hero > *:nth-child(4) { animation-delay: 0.25s; }
+  .hero > *:nth-child(5) { animation-delay: 0.3s; }
+  .hero > *:nth-child(6) { animation-delay: 0.45s; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M2 8 L6 4 L10 8 L14 5" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M10 8 L14 12" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="14" cy="5" r="1.5" fill="#000"/>
+        <circle cx="14" cy="12" r="1.5" fill="#000"/>
+      </svg>
+    </div>
+    Routly AI
+  </a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#models">Models</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#contact" class="nav-cta">Request access</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="glow-orb"></div>
+  <div class="glow-orb"></div>
+  <div class="glow-orb"></div>
+
+  <div class="badge">
+    <div class="badge-dot"></div>
+    Now in private beta
+  </div>
+
+  <h1>Route your prompts to<br><em>the right model.</em><br>Automatically.</h1>
+
+  <p>Routly AI is the intelligent LLM routing layer for enterprise. Cut costs, enforce security policy, and hit SLA targets — without rewriting a line of application code.</p>
+
+  <div class="hero-actions">
+    <a href="#contact" class="btn-primary">
+      Request early access
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+    <a href="#how" class="btn-secondary">See how it works</a>
+  </div>
+
+  <!-- ROUTING DEMO -->
+  <div class="routing-demo">
+    <p class="routing-label">Live routing — single API call</p>
+    <div class="routing-visual">
+      <div class="rv-box">
+        <div class="rv-box-label">Your app</div>
+        <div class="rv-box-value">POST /v1/chat</div>
+      </div>
+
+      <div class="rv-arrow">
+        <div class="rv-arrow-line"></div>
+        <div class="rv-arrow-tag">encrypted</div>
+      </div>
+
+      <div class="rv-router">
+        <div class="rv-router-label">Routly Router</div>
+        <div class="rv-router-value">Analyzing…</div>
+      </div>
+
+      <div class="rv-arrow">
+        <div class="rv-arrow-line"></div>
+        <div class="rv-arrow-tag">policy matched</div>
+      </div>
+
+      <div class="rv-models">
+        <div class="rv-model active">
+          <div class="rv-model-dot"></div>
+          GPT-4o-mini
+        </div>
+        <div class="rv-model">
+          <div class="rv-model-dot"></div>
+          Claude 3.5 Sonnet
+        </div>
+        <div class="rv-model">
+          <div class="rv-model-dot"></div>
+          Gemini 1.5 Pro
+        </div>
+        <div class="rv-model">
+          <div class="rv-model-dot"></div>
+          Llama 3.1 70B
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-number">68%</div>
+    <div class="stat-label">Average cost reduction<br>for enterprise workloads</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">&lt;2ms</div>
+    <div class="stat-label">Routing latency<br>added to requests</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">20+</div>
+    <div class="stat-label">LLM providers<br>supported</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-number">SOC 2</div>
+    <div class="stat-label">Type II certified<br>in progress</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-header">
+    <span class="section-tag">How it works</span>
+    <h2 class="section-title">One endpoint.<br>Every model.</h2>
+    <p class="section-sub">Drop Routly in front of your LLM calls. We handle the rest — no vendor lock-in, no model expertise required.</p>
+  </div>
+
+  <div class="how-grid">
+    <div class="how-step">
+      <span class="step-number">01</span>
+      <div class="step-icon" style="background: var(--accent-dim);">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.5">
+          <rect x="3" y="3" width="14" height="14" rx="3"/>
+          <path d="M7 10h6M10 7v6"/>
+        </svg>
+      </div>
+      <div class="step-title">Connect in minutes</div>
+      <div class="step-desc">Point your existing API calls at Routly's endpoint. We're OpenAI-compatible — most teams are live in under 30 minutes.</div>
+    </div>
+    <div class="how-step">
+      <span class="step-number">02</span>
+      <div class="step-icon" style="background: var(--blue-dim);">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--blue)" stroke-width="1.5">
+          <path d="M4 6h12M4 10h8M4 14h10"/>
+          <circle cx="16" cy="14" r="2.5"/>
+        </svg>
+      </div>
+      <div class="step-title">Define your policies</div>
+      <div class="step-desc">Set cost caps, data residency rules, latency SLAs, and allowed providers. Policies are enforced at the routing layer — not in your code.</div>
+    </div>
+    <div class="how-step">
+      <span class="step-number">03</span>
+      <div class="step-icon" style="background: rgba(139,92,246,0.1);">
+        <svg viewBox="0 0 20 20" fill="none" stroke="#A78BFA" stroke-width="1.5">
+          <path d="M10 3L17 7V13L10 17L3 13V7L10 3Z"/>
+          <path d="M10 3V17M3 7L17 7"/>
+        </svg>
+      </div>
+      <div class="step-title">Routly routes intelligently</div>
+      <div class="step-desc">Each request is classified by task type, complexity, and sensitivity. The optimal model is selected in under 2ms — every time.</div>
+    </div>
+    <div class="how-step">
+      <span class="step-number">04</span>
+      <div class="step-icon" style="background: var(--amber-dim);">
+        <svg viewBox="0 0 20 20" fill="none" stroke="var(--amber)" stroke-width="1.5">
+          <path d="M10 3v4M10 13v4M3 10h4M13 10h4"/>
+          <circle cx="10" cy="10" r="3"/>
+        </svg>
+      </div>
+      <div class="step-title">Observe and optimize</div>
+      <div class="step-desc">Real-time dashboards show cost per request, model usage breakdown, latency distributions, and audit logs — all in one place.</div>
+    </div>
+  </div>
+
+  <div class="code-block">
+    <span class="cmt">// Before Routly — hardcoded to one provider</span><br>
+    <span class="kw">const</span> res = <span class="kw">await</span> openai.chat.completions.create({<br>
+    &nbsp;&nbsp;<span class="key">model</span>: <span class="str">"gpt-4o"</span>, &nbsp;<span class="cmt">// always GPT-4o, expensive</span><br>
+    &nbsp;&nbsp;<span class="key">messages</span>: messages<br>
+    });<br><br>
+    <span class="cmt">// After Routly — one line change, automatic optimization</span><br>
+    <span class="kw">const</span> res = <span class="kw">await</span> routly.chat.completions.create({<br>
+    &nbsp;&nbsp;<span class="key">model</span>: <span class="str">"auto"</span>, &nbsp;<span class="cmt">// Routly picks the best model</span><br>
+    &nbsp;&nbsp;<span class="key">messages</span>: messages<br>
+    });
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" style="background: var(--surface);">
+  <div class="section-header">
+    <span class="section-tag">Enterprise-grade</span>
+    <h2 class="section-title">Built for security.<br>Designed for scale.</h2>
+    <p class="section-sub">Routly gives your AI infrastructure the same rigor you'd expect from any enterprise security tool.</p>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--accent-dim);">
+        <svg viewBox="0 0 18 18" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M9 2L4 4.5V9c0 3.5 2.5 5.5 5 6.5 2.5-1 5-3 5-6.5V4.5L9 2Z"/>
+        </svg>
+      </div>
+      <div class="feature-title">Zero data retention</div>
+      <div class="feature-desc">Prompts and completions are never stored. Traffic passes through our routing layer with end-to-end encryption and no logging of payload content.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--blue-dim);">
+        <svg viewBox="0 0 18 18" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="9" cy="9" r="7"/>
+          <path d="M6 9l2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="feature-title">Policy-as-code</div>
+      <div class="feature-desc">Define allowed models, max cost per call, data residency constraints, and PII detection rules in a simple YAML config checked into your repo.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--amber-dim);">
+        <svg viewBox="0 0 18 18" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M3 9h12M9 3l6 6-6 6"/>
+        </svg>
+      </div>
+      <div class="feature-title">Automatic fallback</div>
+      <div class="feature-desc">If a provider goes down or rate-limits you, Routly reroutes to the next best option automatically — no outage, no manual intervention.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: rgba(139,92,246,0.1);">
+        <svg viewBox="0 0 18 18" fill="none" stroke="#A78BFA" stroke-width="1.5" stroke-linecap="round">
+          <rect x="2" y="5" width="14" height="10" rx="2"/>
+          <path d="M5 5V3.5a4 4 0 018 0V5"/>
+        </svg>
+      </div>
+      <div class="feature-title">RBAC + audit logs</div>
+      <div class="feature-desc">Role-based access for teams, department-level cost budgets, and immutable audit logs for compliance — HIPAA, GDPR, and SOC 2 ready.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--accent-dim);">
+        <svg viewBox="0 0 18 18" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M9 2v4M9 12v4M2 9h4M12 9h4"/>
+          <circle cx="9" cy="9" r="2.5"/>
+        </svg>
+      </div>
+      <div class="feature-title">Cost intelligence</div>
+      <div class="feature-desc">Real-time spend tracking per team, per model, per project. Set hard spending caps — Routly blocks requests before you blow your budget.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon" style="background: var(--blue-dim);">
+        <svg viewBox="0 0 18 18" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round">
+          <path d="M4 14V8l5-5 5 5v6H4Z"/>
+          <path d="M7 14v-4h4v4"/>
+        </svg>
+      </div>
+      <div class="feature-title">Private model support</div>
+      <div class="feature-desc">Route to your own self-hosted or fine-tuned models alongside public providers. Routly works with any OpenAI-compatible endpoint.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MODELS -->
+<section id="models" class="models-section">
+  <div class="section-header">
+    <span class="section-tag">Supported models</span>
+    <h2 class="section-title">Every major provider.<br>One connection.</h2>
+    <p class="section-sub">Routly integrates with 20+ models across all leading providers — and adds new ones continuously.</p>
+  </div>
+
+  <div class="models-grid">
+    <div class="model-card">
+      <div class="model-provider">OpenAI</div>
+      <div class="model-name">GPT-4o</div>
+      <div class="model-tags"><span class="model-tag tag-smart">smart</span><span class="model-tag tag-fast">fast</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-provider">OpenAI</div>
+      <div class="model-name">GPT-4o mini</div>
+      <div class="model-tags"><span class="model-tag tag-fast">fast</span><span class="model-tag tag-cheap">cheap</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-provider">Anthropic</div>
+      <div class="model-name">Claude 3.5 Sonnet</div>
+      <div class="model-tags"><span class="model-tag tag-smart">smart</span><span class="model-tag tag-code">code</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-provider">Anthropic</div>
+      <div class="model-name">Claude 3 Haiku</div>
+      <div class="model-tags"><span class="model-tag tag-fast">fast</span><span class="model-tag tag-cheap">cheap</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-provider">Google</div>
+      <div class="model-name">Gemini 1.5 Pro</div>
+      <div class="model-tags"><span class="model-tag tag-smart">smart</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-provider">Meta</div>
+      <div class="model-name">Llama 3.1 70B</div>
+      <div class="model-tags"><span class="model-tag tag-cheap">cheap</span><span class="model-tag tag-code">code</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-provider">Mistral</div>
+      <div class="model-name">Mistral Large</div>
+      <div class="model-tags"><span class="model-tag tag-smart">smart</span><span class="model-tag tag-fast">fast</span></div>
+    </div>
+    <div class="model-card">
+      <div class="model-provider">Your infra</div>
+      <div class="model-name">Custom / BYOM</div>
+      <div class="model-tags"><span class="model-tag tag-code">private</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-header" style="text-align: center;">
+    <span class="section-tag" style="display:block; text-align:center;">Pricing</span>
+    <h2 class="section-title">Simple, usage-based.</h2>
+    <p class="section-sub" style="margin: 0 auto;">No seat fees. Pay for what you route.</p>
+  </div>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">Startup</div>
+      <div class="plan-desc">For small teams exploring multi-model AI.</div>
+      <div class="plan-price"><sup>$</sup>0<span> / mo</span></div>
+      <div class="plan-mo">Up to 500K tokens / month</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div><strong>5 providers</strong> supported</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Automatic cost routing</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Basic analytics dashboard</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Community support</div>
+        </li>
+      </ul>
+      <a href="#contact" class="plan-btn plan-btn-outline">Get started free</a>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="featured-badge">Most popular</div>
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-desc">For teams with compliance, scale, and SLA requirements.</div>
+      <div class="plan-price"><sup>$</sup>499<span> / mo</span></div>
+      <div class="plan-mo">Unlimited tokens · + usage billing</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div><strong>20+ providers</strong> + BYOM</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div><strong>Zero data retention</strong> mode</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Policy-as-code + RBAC</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Immutable audit logs</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>SLA guarantee + dedicated CSM</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>SSO / SAML + HIPAA / GDPR</div>
+        </li>
+      </ul>
+      <a href="#contact" class="plan-btn plan-btn-solid">Request access</a>
+    </div>
+
+    <div class="pricing-card">
+      <div class="plan-name">Custom</div>
+      <div class="plan-desc">For large orgs with dedicated infra or compliance needs.</div>
+      <div class="plan-price" style="font-size: 32px; margin-bottom: 4px;">Talk to us</div>
+      <div class="plan-mo">Volume discounts available</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Private cloud / VPC deploy</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Custom SLA + support tiers</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Procurement / MSA support</div>
+        </li>
+        <li>
+          <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7.5l3 3 6-6"/></svg>
+          <div>Dedicated infrastructure</div>
+        </li>
+      </ul>
+      <a href="#contact" class="plan-btn plan-btn-outline">Contact sales</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="glow-orb"></div>
+  <h2>Ready to route smarter?</h2>
+  <p>Join the waitlist. Early access teams get 3 months of Enterprise free.</p>
+  <div class="cta-actions">
+    <a href="mailto:hello@routlyai.com" class="btn-primary">
+      hello@routlyai.com
+      <svg viewBox="0 0 16 16" fill="none" width="14" height="14">
+        <path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">Routly AI</a>
+  <ul class="footer-links">
+    <li><a href="#">Privacy</a></li>
+    <li><a href="#">Terms</a></li>
+    <li><a href="#">Security</a></li>
+    <li><a href="mailto:hello@routlyai.com">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 Routly AI. All rights reserved.</div>
+</footer>
+
+<script>
+  // Animate routing demo — cycle active model
+  const models = document.querySelectorAll('.rv-model');
+  const routerVal = document.querySelector('.rv-router-value');
+  const labels = ['GPT-4o-mini', 'Claude Sonnet', 'Gemini Pro', 'Llama 70B'];
+  let active = 0;
+
+  setInterval(() => {
+    models[active].classList.remove('active');
+    active = (active + 1) % models.length;
+    models[active].classList.add('active');
+    routerVal.textContent = labels[active] + '…';
+    setTimeout(() => { routerVal.textContent = 'Routing…'; }, 900);
+  }, 2200);
+</script>
+</body>
+</html>
